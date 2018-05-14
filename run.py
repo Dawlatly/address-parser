@@ -3,8 +3,9 @@ np.set_printoptions(threshold=np.inf)
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import re
+import pycrfsuite
 
-
+#Dictionaries for keyword matching
 roads = {"jalan" : "jalan", 
          "lorong" : "lorong",
          "persiaran" : "persiaran",
@@ -63,20 +64,7 @@ cities = {"george town" : "george town",
           "seremban" : "seremban"}
 country = {"malaysia" : "malaysia"}
 
-
-
-#dataset = pd.read_csv('Address Format - Components.csv')
-##X = dataset.iloc[:, [0]].values
-##X = [X[i][0].split(",") for i in range(len(X))]
-#X = dataset.iloc[:, 1:8]
-#X['postcode'] = X['postcode'].fillna(0).astype(int)
-#data = []
-#for i in range(len(X)):
-#    data.append([])
-#    for j in range(0,7):
-#        if str(X.values[i][j]) != 'nan' and X.values[i][j] != 0:
-#            data[i].append((str(X.values[i][j]), X.columns[j]))
-
+#Takes a component of address and returns the features array
 def word2features(sent, i):
     segment = sent[i][0]
 
@@ -94,7 +82,7 @@ def word2features(sent, i):
         'segment.isHouseNo=%s' % isHouseNo(segment),
         'segment.isHouse=%s' % isHouse(segment),
         'segment.isCity=%s' % isCity(segment),
-        'segment.isCity=%s' % isCountry(segment),
+        'segment.isCountry=%s' % isCountry(segment),
     ]
     if i > 0:
         segment1 = sent[i-1][0]
@@ -104,6 +92,7 @@ def word2features(sent, i):
             '-1:segment.isupper=%s' % segment1.isupper(),
         ])
     else:
+        #BOS stands for Beginning of Sentence
         features.append('BOS')
         
     if i < len(sent)-1:
@@ -114,19 +103,19 @@ def word2features(sent, i):
             '+1:segment.isupper=%s' % segment1.isupper(),
         ])
     else:
+        #EOS stands for End of Sentence
         features.append('EOS')
     return features
 
-
+#Takes each component of the address and passes it to word2features
 def sent2features(sent):
     return [word2features(sent[i], j)  for i in range(len(sent)) for j in range(len(sent[i]))]
 
+#Returns all labels
 def sent2labels(sent):
     return [label for i in range(len(sent)) for token, label in sent[i]]
 
-def sent2tokens(sent):
-    return [token for token in sent]
-
+#Feature functions to be used in feature generation
 def isRoad(sent):
     for k in roads:
         if k in sent.lower():
@@ -170,7 +159,7 @@ def isHouse(sent):
             return True
     return False
 
-
+#Divides the sentence into components
 def segmentSentence(sentence):
     sent = sentence.replace(", ", ",")
     sent = sent.split(",")
@@ -181,14 +170,8 @@ def segmentSentence(sentence):
         sent1[i].append([sent[i]])
     return sent1
 
-#X = sent2features(data)
-#Y = sent2labels(data)
-#
-#
-#X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
-
+#Main function
 def parseAddress(address):
-    import pycrfsuite
     tagger = pycrfsuite.Tagger()
     tagger.open('crf.model')
     segSent = segmentSentence(address)
@@ -197,6 +180,24 @@ def parseAddress(address):
     for i in range(len(prediction)):
         components.update({segSent[i][0][0] : prediction[i]})
     return components
+
+#Training the data begins here
+    
+#dataset = pd.read_csv('Address Format - Components.csv')
+#X = dataset.iloc[:, 1:8]
+#X['postcode'] = X['postcode'].fillna(0).astype(int)
+#data = []
+#for i in range(len(X)):
+#    data.append([])
+#    for j in range(0,7):
+#        if str(X.values[i][j]) != 'nan' and X.values[i][j] != 0:
+#            data[i].append((str(X.values[i][j]), X.columns[j]))
+#
+#X = sent2features(data)
+#Y = sent2labels(data)
+#
+#X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+#
 #trainer = pycrfsuite.Trainer(algorithm='l2sgd', verbose=True)
 #
 #for xseq, yseq in zip(X_train, y_train):
@@ -216,14 +217,18 @@ def parseAddress(address):
 #})
 #trainer.train('crf.model')
 
+#Until Here
 
+
+
+#Used for predictions. No need to execute
 
 #y_pred = [tagger.tag([xseq]) for xseq in X_test]
 #
 #
 #for x, y in zip(y_pred, [x[1].split("=")[1] for x in X_test]):
 #    print("%s (%s)" % (y, x[0]))
-
-
-# test = "No. 39 ,Jln 1/2, Seksyen 1,46000, Malaysia"
-# print(parseAddress(test))
+#
+#
+#test = "No. 39 ,Jln 1/2, Seksyen 1,46000, Malaysia"
+#print(parseAddress(test))
