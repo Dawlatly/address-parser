@@ -5,7 +5,7 @@ import pandas as pd
 import re
 import pycrfsuite
 
-#Dictionaries for keyword matching
+#Dictionarie s for keyword matching
 roads = {"jalan" : "jalan", 
          "lorong" : "lorong",
          "persiaran" : "persiaran",
