@@ -183,39 +183,39 @@ def parseAddress(address):
 
 #Training the data begins here
     
-#dataset = pd.read_csv('Address Format - Components.csv')
-#X = dataset.iloc[:, 1:8]
-#X['postcode'] = X['postcode'].fillna(0).astype(int)
-#data = []
-#for i in range(len(X)):
-#    data.append([])
-#    for j in range(0,7):
-#        if str(X.values[i][j]) != 'nan' and X.values[i][j] != 0:
-#            data[i].append((str(X.values[i][j]), X.columns[j]))
-#
-#X = sent2features(data)
-#Y = sent2labels(data)
-#
-#X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
-#
-#trainer = pycrfsuite.Trainer(algorithm='l2sgd', verbose=True)
-#
-#for xseq, yseq in zip(X_train, y_train):
-#    trainer.append([xseq], [yseq])
-#
-#trainer.set_params({
-#
-#    # coefficient for L2 penalty
-#    'c2': 0.01,  
-#
-#    # maximum number of iterations
-#    'max_iterations': 200,
-#
-#    # whether to include transitions that
-#    # are possible, but not observed
-#    'feature.possible_transitions': True
-#})
-#trainer.train('crf.model')
+dataset = pd.read_csv('Address Format - Components.csv')
+X = dataset.iloc[:, 1:8]
+X['postcode'] = X['postcode'].fillna(0).astype(int)
+data = []
+for i in range(len(X)):
+    data.append([])
+    for j in range(0,7):
+        if str(X.values[i][j]) != 'nan' and X.values[i][j] != 0:
+            data[i].append((str(X.values[i][j]), X.columns[j]))
+
+X = sent2features(data)
+Y = sent2labels(data)
+
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+
+trainer = pycrfsuite.Trainer(algorithm='l2sgd', verbose=True)
+
+for xseq, yseq in zip(X_train, y_train):
+    trainer.append([xseq], [yseq])
+
+trainer.set_params({
+
+    # coefficient for L2 penalty
+    'c2': 0.01,  
+
+    # maximum number of iterations
+    'max_iterations': 200,
+
+    # whether to include transitions that
+    # are possible, but not observed
+    'feature.possible_transitions': True
+})
+trainer.train('crf.model')
 
 #Until Here
 
@@ -223,12 +223,12 @@ def parseAddress(address):
 
 #Used for predictions. No need to execute
 
-#y_pred = [tagger.tag([xseq]) for xseq in X_test]
-#
-#
-#for x, y in zip(y_pred, [x[1].split("=")[1] for x in X_test]):
-#    print("%s (%s)" % (y, x[0]))
-#
-#
+y_pred = [tagger.tag([xseq]) for xseq in X_test]
+
+
+for x, y in zip(y_pred, [x[1].split("=")[1] for x in X_test]):
+    print("%s (%s)" % (y, x[0]))
+
+
 #test = "No. 39 ,Jln 1/2, Seksyen 1,46000, Malaysia"
 #print(parseAddress(test))
